@@ -5,8 +5,8 @@
 * Last updated 28/FEB/2018 18:49 by Dayan - Changed for privacy leaks
 * removed the unused sections
 */
-
-public abstract class BankAccount {
+import java.io.Serializable;
+public abstract class BankAccount implements Serializable {
   private Customer accountHolder;
   private double balance = 0.00;
   //private double overdraftAmount = 100.0;
