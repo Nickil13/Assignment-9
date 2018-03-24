@@ -3,7 +3,8 @@
 * By Dayan Jayasuriya, Nicki Lindstrom and Riley Schaaf
 *
 */
-public final class Customer {
+import java.io.Serializable;
+public final class Customer implements Serializable {
   private String name;
   private int id;
 
