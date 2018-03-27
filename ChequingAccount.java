@@ -6,7 +6,7 @@
 */
 public class ChequingAccount extends BankAccount {
   private double overdraftfee;
-  private double overdraftAmount;
+  private double overdraftAmount = -100;
   public static final double MINIMUM_BALANCE = 0.0;
   public static final double PENALTY_RATE = 0.2;
 
