@@ -1,9 +1,15 @@
 /**
-* We ran out of time for integrating the required components for Assignment 9.
-* This is the GUI portion of the assignment without any file handling.
+* This is the GUI for a Banking App where the user can create either a
+* chequing account or a savings account, setting the transaction fee, balance
+* and customer name, respectively. The id  for the customer is randomly generated as a number
+* between 1000 and 9000.
+* This information is saved to a file. Such that, if the file exists prior to
+* running the app, the app will load its contents and display that account.
+*
+** Created by Dayan Jayasuriya, Nicki Lindstrom and Riley Schaff.
 */
 
-// Last edited at 1:08 pm on March 24th by Nicki.
+// Last edited at 2:28 pm on March 27th by Nicki.
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -11,6 +17,7 @@ import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
 import java.util.Scanner;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -27,6 +34,7 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.EOFException;
+import javafx.scene.image.Image;
 
 public class BankingGUI extends Application{
   private Customer accountHolder;
@@ -48,7 +56,6 @@ public class BankingGUI extends Application{
   private String accountType = "";
   private String customerName;
   private Stage stage;
-  private Scene scene3;
   private int id;
   public final int hBoxWidth = 6;
   public final int vBoxWidth = 30;
@@ -57,7 +64,11 @@ public class BankingGUI extends Application{
   public final int textFieldWidth = 100;
   public final int mathSign = 1;
   public final int s1FontSize = 12;
+  private  TextField customerNameField = new TextField("Enter the name of the customer.");
+  private TextField startBalanceField = new TextField("Enter the starting balance.");
+  private TextField entry = new TextField("Enter Withdrawal or Deposit Amount");
   private HBox transactionFeeHBox = new HBox(hBoxWidth);//hbox for transaction fee for chequing account
+  private String fileName = "";
 
 
   /**
@@ -80,6 +91,33 @@ public class BankingGUI extends Application{
     aChequingAccount = new ChequingAccount(accountHolder, accountBalance, newTransactionFee);
     accountBalance = aChequingAccount.getBalance();
     System.out.println("New chequing account " + "accountHolder " + accountHolder + "newTransactionFee" + newTransactionFee + "accountBalance"+ accountBalance);
+  }
+
+  /**
+  * Method to create a new account and set it as the current account.
+  * depending on what the user has chosen to create in the GUI.
+  */
+  public void createAccount(){
+    Random random = new Random();
+    int newId = random.nextInt(8999) + 1000;
+    accountBalance = Double.parseDouble(startBalanceField.getText());
+    setAccountHolder(customerNameField.getText(),newId);
+    if(accountType.equals("Savings Account")){
+      userSetSavingsAccount();
+      updateAccountTypeSavings();
+      aSavingsAccount.getCustomer().toString();
+      System.out.println("Savings account");
+
+    }else if(accountType.equals("Chequing Account")){
+      newTransactionFee = Double.parseDouble(transactionFeeField.getText());
+      userSetChequingAccount();
+      updateAccountTypeChequing();
+      aChequingAccount.getCustomer().toString();
+      System.out.println("Chequing account");
+    }
+    updateAccountLabels();
+    writeToFile("bankAccount.txt");
+    System.out.println("Account written to file.");
   }
 
   /**
@@ -254,59 +292,48 @@ public class BankingGUI extends Application{
         System.out.println("accountType"+accountType+"accountHolder" +accountHolder+ "accountBalance"+accountBalance);
 
       }
-/*
-      }
-      readOne = (ChequingAccount)inputStream.readObject();
-      if(readOne!=null){
-        aChequingAccount = readOne;
-          accountType = "Chequing Account";
-          System.out.println("We have a chequing account.");
-          Customer aGuy = aChequingAccount.getCustomer();
-          accountHolder = aGuy;
-          accountBalance = aChequingAccount.getBalance();
-          updateAccountLabels();
-          System.out.println(accountBalance);
-          System.out.println(aGuy.toString());
-      }
 
-*/
       System.out.println("End of reading from file.");
       reader.close();
 
       System.out.println();
     }catch(FileNotFoundException e){
       System.out.println("Problem opening file"+ fileName);
-    }/*catch(EOFException e){
-      System.out.println("Problem reading1 the file" + fileName);
-    }catch(IOException e){
-      System.out.println("Problem reading2 the file" + fileName);
-    }catch(ClassNotFoundException e){
-      System.out.println("Class was not found");
-    }*/
+    }
   }
+
+  /*
+  * Method that writes the banking information to a file.
+  * @param: theFileName the name of the file to write to as a String.
+  */
   public void writeToFile(String theFileName){
     String fileName = theFileName;
-  //  ObjectOutputStream outputStream = null;
+
     try{
-    //outputStream = new ObjectOutputStream(new FileOutputStream(fileName));
       BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
     }catch(IOException e){
       System.out.println("Error opening output file" + fileName);
+
+
     }try{
       BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
       if(accountType.equals("Savings Account")||accountType.equals(" Savings Account")){
         writer.write("Type: " +accountType+": ");
-    //  writer.write(id+"");
+        System.out.println("Type: " +accountType+": ");
+
       writer.write(accountHolder+": ");
+      System.out.println("Account Holder: " +accountHolder+": ");
       writer.write("Balance:" +accountBalance+": ");
+      System.out.println("Balance:" +accountBalance+": ");
     }else if (accountType.equals("Chequing Account")||accountType.equals(" Chequing Account")){
       writer.write("Type: " +accountType+": ");
-      //writer.write(id+"");
       writer.write(accountHolder+": ");
       writer.write("Balance: " +accountBalance+": ");
+      System.out.println("Account Holder: " +accountHolder+": ");
+      System.out.println("Balance:" +accountBalance+": ");
       writer.write("Transaction Fee: "+newTransactionFee+": ");
+      System.out.println("Transaction Fee: " +newTransactionFee+": ");
     }
-      //writer.write(aChequingAccount);
       writer.close();
     }catch(FileNotFoundException e){
       System.out.println("Problem opening the file" + fileName);
@@ -314,12 +341,79 @@ public class BankingGUI extends Application{
       System.out.println("Problem with output to file"+ fileName);
     }
   }
+
+  /*
+  * Method that handles clicking the deposit button.
+  */
+  public class HandleDepositClick implements EventHandler<ActionEvent>{
+    public HandleDepositClick(){}
+    public void handle(ActionEvent event){
+      try{
+        amount = (Double.parseDouble(entry.getText()));
+        if(amount> 0){
+          if(accountType.equals("Savings Account") || accountType.equals(" Savings Account")){
+            aSavingsAccount.deposit(amount);
+            accountBalance = aSavingsAccount.getBalance();
+            setBalanceLabel(accountBalance);
+            updateValidDepositWithdraw();
+            writeToFile(fileName);
+          } else{
+            aChequingAccount.deposit(amount);
+            accountBalance = aChequingAccount.getBalance();
+            setBalanceLabel(accountBalance);
+            updateValidDepositWithdraw();
+            writeToFile(fileName);
+          }
+        } else if ((amount) <= 0){
+          updateInvalidDepositWithdrawNumber();
+        }
+      }
+      catch(NumberFormatException e){
+        updateInvalidDepositWithdrawType();
+      }
+
+
+    }
+  }
+
+  /*
+  * Method that handles clicking the withdraw button.
+  */
+  public class HandleWithdrawalClick implements EventHandler<ActionEvent>{
+    public HandleWithdrawalClick(){}
+    public void handle(ActionEvent event){
+      try{
+        amount = (Double.parseDouble(entry.getText()));
+        if(amount> 0){
+          if(accountType.equals("Savings Account")|| accountType.equals(" Savings Account")){
+            aSavingsAccount.withdraw(amount);
+            accountBalance = aSavingsAccount.getBalance();
+            setBalanceLabel(accountBalance);
+            updateValidDepositWithdraw();
+            writeToFile(fileName);
+          } else{
+            aChequingAccount.withdraw(amount);
+            accountBalance = aChequingAccount.getBalance();
+            setBalanceLabel(accountBalance);
+            updateValidDepositWithdraw();
+            writeToFile(fileName);
+          }
+        }else if ((amount) <= 0){
+            updateInvalidDepositWithdrawNumber();
+          }
+        }
+        catch(NumberFormatException e){
+          updateInvalidDepositWithdrawType();
+        }
+    }
+  }
+
   /**
   * Start method.
   */
   public void start(Stage primaryStage){
     stage = primaryStage;
-    String fileName = "bankAccount.txt";
+    fileName = "bankAccount.txt";
     File fileObject = new File(fileName);
     boolean exists = false;
     if(!fileObject.exists()){
@@ -336,40 +430,98 @@ public class BankingGUI extends Application{
     // If the file exists, read from it.
     if(exists == true){
       readFromFile(fileName);
+    }
 
-    // If the file does not exist, create it and write to it.
-  }
+    //Background for all the scenes:
+    Image blueScene = new Image("blueScene.jpeg",1000,1000,true,false);
+    Background blueBackground = new Background(new BackgroundImage(blueScene,
+    BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,BackgroundPosition.DEFAULT,
+    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, false)));
+    //Source: https://www.hdwallpapers.in/hd_desktop_blue-wallpapers.html
+    // Info: https://stackoverflow.com/questions/37619396/how-to-set-image-to-a-scene-background-in-javafx
 
-    //First screen
+    /*
+    **First screen of the GUI (Create a new Account)
+    */
+
     //VBox for the first scene
     VBox accountCreationVBox = new VBox(vBoxWidth/2);
-    TextField fileField = new TextField("Name of a file that exists");
-    Button submitFile = new Button("Submit file name");
-    HBox accountCreationHBox = new HBox(hBoxWidth);
-    accountCreationHBox.getChildren().addAll(submitFile, fileField);
+    accountCreationVBox.setAlignment(Pos.CENTER);
+
+    VBox chooseAccountVBox = new VBox(vBoxWidth);
+    chooseAccountVBox.setAlignment(Pos.CENTER);
+
+    Label createAccount = new Label("Create an Account");
+    createAccount.setFont(Font.font("Verdana",FontWeight.BOLD,16));
+
+    Label createMessage = new Label("Please select the type of account you would like to create.");
+    chooseAccountVBox.getChildren().addAll(createAccount,createMessage);
+
     Button savingsAccountButton = new Button("New Savings Account");
     Button chequingAccountButton = new Button("New Chequing Account");
 
 
-    accountCreationVBox.getChildren().addAll(accountCreationHBox, savingsAccountButton, chequingAccountButton, errorFileLabel);
+    accountCreationVBox.getChildren().addAll(chooseAccountVBox, savingsAccountButton, chequingAccountButton, errorFileLabel);
 
-    fileField.setAlignment(Pos.CENTER);
-    fileField.setPrefWidth(textFieldWidth*2);
-    submitFile.setAlignment(Pos.CENTER);
-    savingsAccountButton.setAlignment(Pos.CENTER);
-    chequingAccountButton.setAlignment(Pos.CENTER);
-
-    // create a border pane for the first scene
+    // Create a border pane for the first scene
     BorderPane borderPane1 = new BorderPane();
     borderPane1.setCenter(accountCreationVBox);
+    borderPane1.setBackground(blueBackground);
 
     //Create the initial scene
     Scene scene1 = new Scene(borderPane1, groupWidth, groupHeight);
 
 
+    /*
+    ** Second screen of the GUI (Submit Account information)
+    */
 
-    //Vbox containing all the buttons and hboxes
-    VBox vBox = new VBox(vBoxWidth/2);
+    HBox custNameHBox = new HBox(hBoxWidth);
+    Label customerNameLabel = new Label("Customer name: ");
+
+    custNameHBox.getChildren().addAll(customerNameLabel, customerNameField);
+    custNameHBox.setAlignment(Pos.CENTER);
+    customerNameField.setPrefWidth(textFieldWidth*2);
+
+    // third hbox for start Balance and corresponding textField
+    HBox startBalanceHBox = new HBox(hBoxWidth);
+    Label startBalanceLabel = new Label("Start balance: ");
+
+    startBalanceField.setPrefWidth(textFieldWidth*2);
+    startBalanceHBox.getChildren().addAll(startBalanceLabel, startBalanceField);
+    startBalanceHBox.setAlignment(Pos.CENTER);
+
+    transactionFeeHBox.setAlignment(Pos.CENTER);
+
+    titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+    titleLabel.setAlignment(Pos.CENTER);
+
+    Button createButton = new Button("Create");
+
+    // A VBox containing all boxes and buttons for Scene 2.
+    VBox vBoxS2 = new VBox(vBoxWidth);
+    vBoxS2.setAlignment(Pos.CENTER);
+    vBoxS2.getChildren().addAll(titleLabel, transactionFeeHBox, custNameHBox,
+    startBalanceHBox, createButton);
+
+
+    BorderPane borderPane2 = new BorderPane();
+    borderPane2.setCenter(vBoxS2);
+    borderPane2.setBackground(blueBackground);
+
+    Scene scene2 = new Scene(borderPane2, groupWidth, groupHeight);
+
+
+    /*
+    ** Third Screen of the GUI (Account information)
+    */
+
+    HBox sceneTitleHBox = new HBox(hBoxWidth);
+    Label sceneTitle = new Label("Customer's "+ accountType);
+    sceneTitle.setFont(Font.font("Verdana",FontWeight.BOLD,16));
+    sceneTitleHBox.getChildren().add(sceneTitle);
+    sceneTitleHBox.setAlignment(Pos.CENTER);
+    sceneTitleHBox.setPadding(new Insets(10));
 
     //Hbox containing the balance and a label for it
     HBox balanceBox = new HBox(hBoxWidth);
@@ -379,173 +531,45 @@ public class BankingGUI extends Application{
     VBox accountHolderBox = new VBox(vBoxWidth/2);
     accountHolderBox.getChildren().addAll(accountHolderName, accountHolderID);
 
-    //HBox Containing Buttons for withdrawl and deposit
-    HBox buttons = new HBox();
-    Button withdrawal = new Button("Withdraw");
-    Button deposit = new Button("Deposit");
 
 
     //Vbox Containing the user input area
     VBox changeInMoney = new VBox();
-    TextField entry = new TextField("Enter Withdrawal or Deposit Amount");
-    entry.setPrefWidth(textFieldWidth);
+    entry.setMaxWidth(200);
     changeInMoney.getChildren().add(entry);
 
-    /*Create actions for buttons
-    Deposit entry into current bank account's balance
-    Source of technique was Chapter 8, Walter Savitch Java: An Introduction to Problem Solving and Programming (8th Edition)
-    */
-    deposit.setOnAction(new EventHandler<ActionEvent>(){
-      @Override
-      public void handle(ActionEvent event){
-        //get value of deposit
-        try{
-          amount = (Double.parseDouble(entry.getText()));
-          if(amount> 0){
-            if(accountType.equals("Savings Account") || accountType.equals(" Savings Account")){
-              aSavingsAccount.deposit(amount);
-              accountBalance = aSavingsAccount.getBalance();
-              setBalanceLabel(accountBalance);
-              updateValidDepositWithdraw();
-              writeToFile(fileName);
-            } else{
-              aChequingAccount.deposit(amount);
-              accountBalance = aChequingAccount.getBalance();
-              setBalanceLabel(accountBalance);
-              updateValidDepositWithdraw();
-              writeToFile(fileName);
-            }
-          } else if ((amount) <= 0){
-            updateInvalidDepositWithdrawNumber();
-          }
-        }
-        catch(NumberFormatException e){
-          updateInvalidDepositWithdrawType();
-        }
-
-      }
-    });
-
-    //withdraw entry from current bank account's balance
-    withdrawal.setOnAction(new EventHandler<ActionEvent>(){
-      @Override
-      public void handle(ActionEvent event){
-        //get value of deposit
-        try{
-          amount = (Double.parseDouble(entry.getText()));
-          if(amount> 0){
-            if(accountType.equals("Savings Account")|| accountType.equals(" Savings Account")){
-              aSavingsAccount.withdraw(amount);
-              accountBalance = aSavingsAccount.getBalance();
-              setBalanceLabel(accountBalance);
-              updateValidDepositWithdraw();
-              writeToFile(fileName);
-            } else{
-              aChequingAccount.withdraw(amount);
-              accountBalance = aChequingAccount.getBalance();
-              setBalanceLabel(accountBalance);
-              updateValidDepositWithdraw();
-              writeToFile(fileName);
-            }
-          }else if ((amount) <= 0){
-              updateInvalidDepositWithdrawNumber();
-            }
-          }
-          catch(NumberFormatException e){
-            updateInvalidDepositWithdrawType();
-          }
-
-        }
-      });
-
-
-    // second hbox for Customer name and corresponding textField
-    HBox custNameHBox = new HBox(hBoxWidth);
-    Label customerNameLabel = new Label("Customer name: ");
-    TextField customerNameField = new TextField("Enter the name of the customer.");
-    custNameHBox.getChildren().addAll(customerNameLabel, customerNameField);
-    customerNameField.setPrefWidth(textFieldWidth*2);
-
-    // third hbox for start Balance and corresponding textField
-    HBox startBalanceHBox = new HBox(hBoxWidth);
-    Label startBalanceLabel = new Label("Start balance: ");
-    TextField startBalanceField = new TextField("Enter the starting balance.");
-    startBalanceField.setPrefWidth(textFieldWidth*2);
-    startBalanceHBox.getChildren().addAll(startBalanceLabel, startBalanceField);
-
-
-    // Create a Vbox and add the hboxes to the Vbox
-    VBox vBoxS2 = new VBox(vBoxWidth);
-
-    //  a label for the new scene
-    titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
-
-    titleLabel.setAlignment(Pos.CENTER);
-
-    // create button
-    Button createButton = new Button("Create");
-
-
-    // add the boxes and the buttons to the vBox
-    vBoxS2.getChildren().addAll(titleLabel, transactionFeeHBox, custNameHBox,
-    startBalanceHBox, createButton);
-
-
-    //combine all boxes into scene
-    buttons.getChildren().addAll(withdrawal, deposit);
-    vBox.getChildren().addAll(accountHolderBox, balanceBox, buttons, changeInMoney, invalidDepositWithdraw);
     accountHolderBox.setAlignment(Pos.CENTER);
     balanceBox.setAlignment(Pos.CENTER);
-    buttons.setAlignment(Pos.CENTER);
+
     changeInMoney.setAlignment(Pos.CENTER);
 
-    // create a border pane for the third scene
+    //HBox Containing Buttons for withdrawl and deposit
+    HBox buttons = new HBox();
+    buttons.setAlignment(Pos.CENTER);
+    Button withdrawal = new Button("Withdraw");
+    Button deposit = new Button("Deposit");
+    buttons.getChildren().addAll(withdrawal, deposit);
+
+    // Deposits money into the current account.
+    deposit.setOnAction(new HandleDepositClick());
+
+    // Withdraw money from the current account.
+    withdrawal.setOnAction(new HandleWithdrawalClick());
+
+
+    // A VBox containing all boxes and buttons for Scene 3.
+    VBox vBoxS3 = new VBox(vBoxWidth/2);
+    vBoxS3.getChildren().addAll(sceneTitleHBox,accountHolderBox, balanceBox, buttons, changeInMoney, invalidDepositWithdraw);
+
+
     BorderPane borderPane3 = new BorderPane();
-    borderPane3.setCenter(vBox);
+    borderPane3.setBackground(blueBackground);
+    borderPane3.setCenter(vBoxS3);
 
 
+    Scene scene3 = new Scene(borderPane3, groupWidth, groupHeight);
 
-    // add another borderPane
-    BorderPane borderPane2 = new BorderPane();
 
-    // align the boxes in scene 2
-    transactionFeeHBox.setAlignment(Pos.CENTER);
-    custNameHBox.setAlignment(Pos.CENTER);
-    startBalanceHBox.setAlignment(Pos.CENTER);
-    vBoxS2.setAlignment(Pos.CENTER);
-    borderPane2.setCenter(vBoxS2);
-
-    // create the second scene
-    Scene scene2 = new Scene(borderPane2, groupWidth, groupHeight);
-
-    // set up a third scene
-    scene3 = new Scene(borderPane3, groupWidth, groupHeight);
-
-    /*
-    *Button action to submit the name of a .txt file.
-    */
-    submitFile.setOnAction(new EventHandler<ActionEvent>(){
-      @Override
-      public void handle(ActionEvent event){
-        String file = fileField.getText();
-        readFromFile(file);
-        primaryStage.setScene(scene3);
-        /*//try to get banking information from a file the user might provide.
-        Adapted from CPSC 219 ReadMe.java example.
-        try{
-          BufferedReader bankingfile = new BufferedReader(new FileReader(file + ".txt"));
-          String line = bankingfile.readLine();
-          while (line !=null){
-            line = bankingfile.readLine();
-          }
-          primaryStage.setScene(scene2);
-        }catch (FileNotFoundException e){
-          errorFileLabel.setText("The file "+ file+".txt"+ " does not exist.");
-        }catch (IOException e){
-          errorFileLabel.setText("The file "+ file+".txt"+ " is the wrong format.");
-        }*/
-      }
-    });
 
     /**
     * Button action to create a new savings account.
@@ -554,7 +578,6 @@ public class BankingGUI extends Application{
       @Override
       public void handle(ActionEvent event){
         updateAccountTypeSavings();
-      //  accountType = "Savings Account";
         primaryStage.setScene(scene2);
       }
     });
@@ -566,53 +589,25 @@ public class BankingGUI extends Application{
       @Override
       public void handle(ActionEvent event){
         updateAccountTypeChequing();
-        //accountType = "Chequing Account";
         settransactionFeeHBox();
         primaryStage.setScene(scene2);
       }
     });
 
     /**
-    * Handle when creatButton pressed to create a new account.
+    * Handle when createButton pressed to create a new account.
     */
     createButton.setOnAction(new EventHandler<ActionEvent>(){
       public void handle(ActionEvent event){
-        if (accountType.equals("Savings Account")){
-          //https://stackoverflow.com/questions/32534601/java-gettting-a-random-number-from-100-to-999
-          Random random = new Random();
-          // generate random number between 0 and 8999 then add 1000 to get between 1000 and 9999.
-          id = random.nextInt(8999) + 1000;
-          accountBalance = Double.parseDouble(startBalanceField.getText());
-          accountBalance = Double.parseDouble(startBalanceField.getText());
-
-
-          primaryStage.setScene(scene3);
-          setAccountHolder(customerNameField.getText(), id);
-          userSetSavingsAccount();
-          updateAccountLabels();
-          writeToFile("bankAccount.txt");
-          aSavingsAccount.getCustomer().toString();
-          System.out.println("Savings account written to file.");
-        } else if(accountType.equals("Chequing Account")){
-          //https://stackoverflow.com/questions/32534601/java-gettting-a-random-number-from-100-to-999
-          Random random = new Random();
-          // generate random number between 0 and 8999 then add 1000 to get between 1000 and 9999.
-          int id = random.nextInt(8999) + 1000;
-          accountBalance = Double.parseDouble(startBalanceField.getText());
-          newTransactionFee = Double.parseDouble(transactionFeeField.getText());
-          primaryStage.setScene(scene3);
-          setAccountHolder(customerNameField.getText(), id);
-          updateAccountTypeChequing();
-          userSetChequingAccount();
-          updateAccountLabels();
-          writeToFile("bankAccount.txt");
-          System.out.println("Chequing account written to file.");
-        }
+        createAccount();
+        primaryStage.setScene(scene3);
       }
     });
 
 
     primaryStage.setTitle("Banking GUI");
+    // If a file exists from which to load information, load it and change
+    // scene to see the Account Information.
     if(exists==false){
       primaryStage.setScene(scene1);
     }else{
